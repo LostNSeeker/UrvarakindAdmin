@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import api from '@/lib/api'
 
 export default function SignIn() {
   const router = useRouter()
@@ -25,18 +26,20 @@ export default function SignIn() {
     setError("")
 
     try {
-      // In a real app, you would call your authentication API here
-      // For demo purposes, we'll just simulate a successful login
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await api.post('/auth/login', {
+        email,
+        password
+      });
 
-      // Check for demo credentials
-      if (email === "admin@example.com" && password === "password") {
-        router.push("/dashboard")
-      } else {
-        setError("Invalid email or password")
-      }
-    } catch (err) {
-      setError("An error occurred during sign in")
+      // Store token
+      localStorage.setItem('token', response.data.token);
+      
+      // Store user info
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'An error occurred during sign in');
     } finally {
       setIsLoading(false)
     }
